@@ -69,6 +69,29 @@ class StatusLookupTest extends TestCase
     }
 
     #[Test]
+    public function the_lookup_promotes_its_result_into_a_modal(): void
+    {
+        Registration::factory()->create(['code' => 'CAF2-0006', 'group_name' => 'Moshi Harmony']);
+
+        $found = $this->resultBlock(
+            $this->get(route('status', ['code' => 'CAF2-0006']))->assertOk()->getContent()
+        );
+
+        // caf.js promotes this markup into a modal, so the hooks it relies on
+        // have to be in the server-rendered output.
+        $this->assertStringContainsString('status-result__panel', $found);
+        $this->assertStringContainsString('data-status-close', $found);
+        $this->assertStringContainsString('aria-label="Close status result"', $found);
+
+        $missing = $this->resultBlock(
+            $this->get(route('status', ['code' => 'CAF-9998']))->assertOk()->getContent()
+        );
+
+        $this->assertStringContainsString('status-result__panel', $missing);
+        $this->assertStringContainsString('data-status-close', $missing);
+    }
+
+    #[Test]
     public function a_registration_links_to_its_own_public_status_page(): void
     {
         $registration = Registration::factory()->create(['code' => 'CAF-0044']);

@@ -625,6 +625,68 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 
 .status.success{color:var(--success)}
 .status.error{color:var(--danger)}
 
+/* ============================================================
+   Status result
+   The server renders the result inline so a lookup never depends on
+   scripting. caf.js then promotes that same markup into a modal, and
+   closing the modal hands the page back the inline result.
+   ============================================================ */
+.status-result{position:relative;max-width:640px;margin:32px auto 0}
+.status-result--wide{max-width:760px}
+/* Once the modal has been shown, the inline copy is removed for good so the
+   result is never visible in two places at once. */
+.status-result.is-dismissed{display:none}
+.status-result__panel{
+  position:relative;
+  background:var(--surface);color:var(--text);
+  border:1px solid var(--border);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-lg);overflow:hidden;
+}
+.status-result__close{
+  display:none;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:50%;
+  background:var(--surface);color:var(--brand-800);
+  border:1px solid var(--border);cursor:pointer;
+  transition:transform .2s var(--ease),border-color .2s ease,color .2s ease;
+}
+.status-result__close:hover{border-color:var(--accent);color:var(--accent-ink);transform:scale(1.06)}
+.status-result__close svg{width:18px;height:18px}
+
+body.status-modal-open{overflow:hidden}
+
+.status-result.is-modal{
+  position:fixed;inset:0;z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;max-width:none;margin:0;
+}
+.status-result.is-modal::before{
+  content:"";position:fixed;inset:0;
+  background:rgba(31,14,17,.62);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  animation:statusFade .2s ease;
+}
+/* The panel scrolls internally so the pinned close button never drifts away. */
+.status-result.is-modal .status-result__panel{
+  z-index:1;width:100%;max-width:760px;
+  max-height:calc(100vh - 48px);overflow-y:auto;
+  animation:statusRise .24s var(--ease);
+}
+.status-result.is-modal .status-result__close{
+  display:inline-flex;position:absolute;top:14px;right:14px;z-index:2;
+}
+@keyframes statusFade{from{opacity:0}to{opacity:1}}
+@keyframes statusRise{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+
+@media (max-width:680px){
+  /* Give the close button its own band instead of letting it sit on the panel. */
+  .status-result.is-modal{padding-top:64px}
+  .status-result.is-modal .status-result__panel{max-height:calc(100vh - 88px)}
+}
+@media (prefers-reduced-motion:reduce){
+  .status-result.is-modal::before,
+  .status-result.is-modal .status-result__panel{animation:none}
+}
+
 /* Poster — single rotating slot on the register card */
 .poster-show{margin-top:36px}
 .poster-stage{

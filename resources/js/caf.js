@@ -185,6 +185,68 @@
   }
 
   /* ============================================================
+     Status result modal
+     ============================================================
+     The result is rendered inline by the server so a lookup never
+     depends on scripting. When scripting is available that same markup
+     is promoted into a modal; closing it simply hands the page back
+     the inline result.
+     ============================================================ */
+  var statusResult = document.getElementById('status-result');
+
+  if (statusResult) {
+    var statusClose = statusResult.querySelector('[data-status-close]');
+    var codeField = document.getElementById('code');
+
+    var closeStatusModal = function () {
+      statusResult.classList.remove('is-modal');
+      // The result belongs in the modal or nowhere: leaving the inline copy in
+      // place would show the same message twice on the page.
+      statusResult.classList.add('is-dismissed');
+      document.body.classList.remove('status-modal-open');
+      var back = codeField || document.activeElement;
+      if (back && back.focus) back.focus({preventScroll: true});
+    };
+
+    document.addEventListener('keydown', function (e) {
+      if (!statusResult.classList.contains('is-modal')) return;
+
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        closeStatusModal();
+        return;
+      }
+
+      if (e.key !== 'Tab') return;
+
+      // Keep focus inside the dialog while it is open.
+      var items = statusResult.querySelectorAll('a[href], button:not([disabled])');
+      if (!items.length) return;
+      var first = items[0];
+      var last = items[items.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+
+    if (statusClose) statusClose.addEventListener('click', closeStatusModal);
+
+    // The backdrop is a pseudo-element, so a click on it lands on the overlay.
+    statusResult.addEventListener('click', function (e) {
+      if (e.target === statusResult) closeStatusModal();
+    });
+
+    statusResult.classList.add('is-modal');
+    document.body.classList.add('status-modal-open');
+    statusResult.focus({preventScroll: true});
+  }
+
+  /* ============================================================
      Scroll reveal
      ============================================================ */
   if (document.documentElement.classList.contains('js') && 'IntersectionObserver' in window) {
@@ -277,7 +339,7 @@
   var status = document.getElementById('formStatus');
 
   if (form && status) {
-    var TO = 'hello@cultureacapellafestival.org';
+    var TO = 'info@cultureacapellafestival.com';
 
     form.addEventListener('submit', function(e){
       e.preventDefault();

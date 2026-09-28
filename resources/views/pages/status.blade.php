@@ -18,7 +18,9 @@
       The lookup form and its result are deliberately not given the `reveal`
       class. That animation starts elements at opacity:0 and only reveals them
       once they scroll into view, which left a valid result sitting invisible
-      below the fold. Feedback here must never depend on JavaScript.
+      below the fold. Feedback here must never depend on JavaScript, so the
+      result is rendered inline and caf.js promotes it into a modal. Without
+      scripting the inline result below is what the visitor gets.
     --}}
     <form class="form-card" method="GET" action="{{ route('status') }}" role="search" style="max-width:640px;margin:0 auto">
       <div class="field">
@@ -34,12 +36,19 @@
     </form>
 
     @if ($notFound)
-      <div id="status-result" tabindex="-1" style="max-width:640px;margin:32px auto 0">
-        <p class="status error" role="alert">
-          <strong>No registration found for &ldquo;{{ $code }}&rdquo;.</strong>
-        </p>
-        <p style="color:var(--muted)">Check the code for typos, or contact us on WhatsApp at
-          <a href="https://wa.me/255752312128">+255 752 312 128</a> and we will look it up for you.</p>
+      <div id="status-result" class="status-result" tabindex="-1">
+        <button class="status-result__close" type="button" data-status-close aria-label="Close status result">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
+        <div class="status-result__panel">
+          <div style="padding:28px">
+            <p class="status error" role="alert" style="margin:0 0 10px">
+              <strong>No registration found for &ldquo;{{ $code }}&rdquo;.</strong>
+            </p>
+            <p style="color:var(--muted);margin:0">Check the code for typos, or contact us on WhatsApp at
+              <a href="https://wa.me/255752312128">+255 752 312 128</a> and we will look it up for you.</p>
+          </div>
+        </div>
       </div>
     @endif
 
@@ -52,14 +61,17 @@
         $currency = $invoice?->currency ?? $registration->season?->currency ?? 'TZS';
       @endphp
 
-      <div id="status-result" tabindex="-1" style="max-width:760px;margin:32px auto 0">
+      <div id="status-result" class="status-result status-result--wide" tabindex="-1">
+        <button class="status-result__close" type="button" data-status-close aria-label="Close status result">
+          <i data-lucide="x" aria-hidden="true"></i>
+        </button>
         {{-- Announced to screen readers so the outcome is never silent. --}}
-        <p class="status success" role="status" style="margin:0 0 14px">
-          <strong>Found your registration.</strong> Here is where {{ $registration->group_name }} stands today.
-        </p>
-
-        <div class="group-card">
+        <div class="status-result__panel">
           <div style="padding:28px">
+            <p class="status success" role="status" style="margin:0 0 14px">
+              <strong>Found your registration.</strong> Here is where {{ $registration->group_name }} stands today.
+            </p>
+
             <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between">
               <div>
                 <span class="eyebrow"><i></i>{{ $registration->code }}</span>
@@ -69,7 +81,7 @@
                   @if ($registration->city) &middot; {{ $registration->city }}, {{ $registration->country }} @endif
                 </p>
               </div>
-              <div style="text-align:right">
+              <div style="text-align:right;padding-right:44px">
                 <span class="chip" aria-pressed="true">{{ $registration->status->label() }}</span>
                 <p style="color:var(--muted);margin:10px 0 0;font-size:14px">
                   {{ $registration->members_count }} {{ Str::plural('performer', $registration->members_count) }}
@@ -132,17 +144,4 @@
   </div>
 </section>
 
-{{-- Bring the outcome into view and move focus to it, so a lookup that
-     happens below the fold still lands in front of the visitor. The result
-     above is already visible without this; this only adds the scroll. --}}
-@if ($searched)
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      var result = document.getElementById('status-result');
-      if (!result) return;
-      result.scrollIntoView({behavior: 'smooth', block: 'center'});
-      result.focus({preventScroll: true});
-    });
-  </script>
-@endif
 @endsection
