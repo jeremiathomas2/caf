@@ -172,7 +172,7 @@
 
       <ul class="hero-trust">
         <li>Open to groups worldwide</li>
-        <li>Judged by a professional panel</li>
+        <li>Let's sing and Worship together</li>
         <li>Supporting children in need</li>
       </ul>
     </div>
